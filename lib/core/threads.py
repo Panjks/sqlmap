@@ -28,14 +28,17 @@ shared = AttribDict()
 class _ThreadData(threading.local):
     """
     Represents thread independent data
+    表示了各个线程独立的数据
     """
 
     def __init__(self):
         self.reset()
+        # 初始化
 
     def reset(self):
         """
         Resets thread data model
+        # 重置线程数据模版
         """
 
         self.disableStdOut = False
@@ -62,7 +65,7 @@ class _ThreadData(threading.local):
         self.validationRun = 0
         self.valueStack = []
 
-ThreadData = _ThreadData()
+ThreadData = _ThreadData()  # 建立一个_ThreadData()类对象
 
 def readInput(message, default=None, checkBatch=True, boolean=False):
     # It will be overwritten by original from lib.core.common
@@ -72,7 +75,7 @@ def getCurrentThreadData():
     """
     Returns current thread's local data
     """
-
+    # 读取全局ThreadData 应该是线程数据
     global ThreadData
 
     return ThreadData

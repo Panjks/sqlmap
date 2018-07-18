@@ -5,6 +5,8 @@ Copyright (c) 2006-2018 sqlmap developers (http://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
+# 自定义异常类 继承于Exception类
+
 class SqlmapBaseException(Exception):
     pass
 

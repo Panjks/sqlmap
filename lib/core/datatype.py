@@ -12,7 +12,8 @@ class AttribDict(dict):
     """
     This class defines the sqlmap object, inheriting from Python data
     type dictionary.
-
+    继承自python的字典数据结构，定义了sqlmap的对象
+    很简单但经典，可以像访问属性一样访问dict中的键值对
     >>> foo = AttribDict()
     >>> foo.bar = 1
     >>> foo.bar
@@ -22,8 +23,8 @@ class AttribDict(dict):
     def __init__(self, indict=None, attribute=None):
         if indict is None:
             indict = {}
-
-        # Set any attributes here - before initialisation
+        # 初始化字典
+        # Set any attributes here - before initialisation # 在初始化之前设置属性
         # these remain as normal attributes
         self.attribute = attribute
         dict.__init__(self, indict)
@@ -34,12 +35,17 @@ class AttribDict(dict):
 
     def __getattr__(self, item):
         """
+
         Maps values to attributes
         Only called if there *is NOT* an attribute with this name
+        动态返回一个属性的值。动态创建对象
+        重写了__getattr__方法 实现 值->属性的映射 只有在名字不是个属性时调用
         """
 
         try:
             return self.__getitem__(item)
+        # """ x.__getitem__(y) <==> x[y] """
+        # 当键值错误时
         except KeyError:
             raise AttributeError("unable to access item '%s'" % item)
 
@@ -47,19 +53,25 @@ class AttribDict(dict):
         """
         Maps attributes to values
         Only if we are initialised
+        实现属性->值的映射
+        初始化后执行
         """
 
         # This test allows attributes to be set in the __init__ method
+        # 如果没有初始化过，以父类dict的类型添加
         if "_AttribDict__initialised" not in self.__dict__:
             return dict.__setattr__(self, item, value)
 
         # Any normal attributes are handled normally
+        # __dict__ 用于存放对象及对象值的键值对
+        # 当已经有item对象时
         elif item in self.__dict__:
             dict.__setattr__(self, item, value)
-
+        # 当没有item对象时
         else:
             self.__setitem__(item, value)
 
+    # __getstate__和__setstate__方法不是很理解 大概是更好pickle序列化？
     def __getstate__(self):
         return self.__dict__
 
@@ -67,6 +79,7 @@ class AttribDict(dict):
         self.__dict__ = dict
 
     def __deepcopy__(self, memo):
+        # 不懂什么用
         retVal = self.__class__()
         memo[id(self)] = retVal
 

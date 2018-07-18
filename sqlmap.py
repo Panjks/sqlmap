@@ -7,33 +7,34 @@ See the file 'LICENSE' for copying permission
 
 import sys
 
-sys.dont_write_bytecode = True
+sys.dont_write_bytecode = True  # 不生成pyc编译文件
 
 try:
     __import__("lib.utils.versioncheck")  # this has to be the first non-standard import
 except ImportError:
-    exit("[!] wrong installation detected (missing modules). Visit 'https://github.com/sqlmapproject/sqlmap/#installation' for further details")
+    exit(
+        "[!] wrong installation detected (missing modules). Visit 'https://github.com/sqlmapproject/sqlmap/#installation' for further details")
 
-import bdb
-import distutils
-import glob
-import inspect
+import bdb  # python内建调试框架
+import distutils  # 构建和安装其他模块
+import glob  # python 查找文件模块 支持通配符
+import inspect  # inspect模块用于收集python对象的信息，可以获取类或函数的参数的信息，源码，解析堆栈，对对象进行类型检查等等
 import json
 import logging
 import os
 import re
-import shutil
+import shutil  # 复制粘贴 压缩文件等等
 import sys
 import thread
 import threading
 import time
-import traceback
-import warnings
+import traceback  # 异常栈跟踪
+import warnings  # python内建警告模块 不会中断访问
 
-warnings.filterwarnings(action="ignore", message=".*was already imported", category=UserWarning)
-warnings.filterwarnings(action="ignore", category=DeprecationWarning)
+warnings.filterwarnings(action="ignore", message=".*was already imported", category=UserWarning)  # 忽略warnings
+warnings.filterwarnings(action="ignore", category=DeprecationWarning)  # 忽略warnings
 
-from lib.core.data import logger
+from lib.core.data import logger  # 日志记录对象
 
 try:
     from lib.core.common import banner
@@ -63,64 +64,79 @@ try:
     from lib.core.settings import LEGAL_DISCLAIMER
     from lib.core.settings import THREAD_FINALIZATION_TIMEOUT
     from lib.core.settings import UNICODE_ENCODING
-    from lib.core.settings import VERSION
+    from lib.core.settings import VERSION  # 从SQLMAP设置中获取版本号
     from lib.parse.cmdline import cmdLineParser
-except KeyboardInterrupt:
+except KeyboardInterrupt:  # 用户停止 抛出异常
     errMsg = "user aborted"
-    logger.error(errMsg)
+    logger.error(errMsg)  # 输出错误
 
-    raise SystemExit
+    raise SystemExit  # 退出
 
-def modulePath():
+
+def modulePath():  # 当打包的时候获取路径
     """
     This will get us the program's directory, even if we are frozen
     using py2exe
     """
 
     try:
-        _ = sys.executable if weAreFrozen() else __file__
+        # weAreFrozen返回是否使用py2exe进行打包
+        _ = sys.executable if weAreFrozen() else __file__  # sys.executable  python可执行文件路径  __file__文件当前路径
     except NameError:
-        _ = inspect.getsourcefile(modulePath)
+        _ = inspect.getsourcefile(modulePath)  # 返回object的python源文件名
 
+    # 进行编码
     return getUnicode(os.path.dirname(os.path.realpath(_)), encoding=sys.getfilesystemencoding() or UNICODE_ENCODING)
 
+
 def checkEnvironment():
+    # 检查环境
     try:
-        os.path.isdir(modulePath())
+        os.path.isdir(modulePath())  # 判断模块路径是否是 路径
+    # 当发生编码错误时曝出异常
     except UnicodeEncodeError:
         errMsg = "your system does not properly handle non-ASCII paths. "
         errMsg += "Please move the sqlmap's directory to the other location"
-        logger.critical(errMsg)
-        raise SystemExit
+        logger.critical(errMsg)  # 调用日志记录类
+        raise SystemExit  # 退出程序
 
+    # 如果sqlmap版本号小于1.0 报错退出
     if distutils.version.LooseVersion(VERSION) < distutils.version.LooseVersion("1.0"):
         errMsg = "your runtime environment (e.g. PYTHONPATH) is "
         errMsg += "broken. Please make sure that you are not running "
         errMsg += "newer versions of sqlmap with runtime scripts for older "
         errMsg += "versions"
-        logger.critical(errMsg)
-        raise SystemExit
+        logger.critical(errMsg)  # 调用日志记录类
+        raise SystemExit  # 退出程序
 
-    # Patch for pip (import) environment
+    # Patch for pip (import) environment 修复import的环境
+    # sys.modules是全局字典，记录模块。 如果sqlmap.sqlmap模块调用
     if "sqlmap.sqlmap" in sys.modules:
         for _ in ("cmdLineOptions", "conf", "kb"):
-            globals()[_] = getattr(sys.modules["lib.core.data"], _)
+            globals()[_] = getattr(sys.modules["lib.core.data"], _)  # 全局变量中添加("cmdLineOptions", "conf", "kb")3个模块信息
 
-        for _ in ("SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException", "SqlmapUserQuitException"):
+        for _ in (
+                "SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException",
+                "SqlmapUserQuitException"):
             globals()[_] = getattr(sys.modules["lib.core.exception"], _)
+        # 全局变量中添加("SqlmapBaseException", "SqlmapShellQuitException", "SqlmapSilentQuitException", "SqlmapUserQuitException")模块信息
+
 
 def main():
     """
     Main function of sqlmap when running from command line.
+    当命令行运行sqlmap时的主函数
     """
 
     try:
-        dirtyPatches()
-        checkEnvironment()
-        setPaths(modulePath())
-        banner()
+        dirtyPatches()  # 脏代码补丁
+        checkEnvironment()  # 检查环境
+        setPaths(modulePath())  # 设置各个模块的真实路径 并检查sqlmap文件
+        banner()  # 输出banner
 
         # Store original command line options for possible later restoration
+        # 命令行参数保存 存储了之后可能会重新读取用到的命令行选项
+        # cmdLineOptions为字典对象 存储了命令行参数
         cmdLineOptions.update(cmdLineParser().__dict__)
         initOptions(cmdLineOptions)
 
@@ -294,7 +310,8 @@ def main():
                 logger.error(errMsg)
                 raise SystemExit
 
-            elif "'DictObject' object has no attribute '" in excMsg and all(_ in errMsg for _ in ("(fingerprinted)", "(identified)")):
+            elif "'DictObject' object has no attribute '" in excMsg and all(
+                    _ in errMsg for _ in ("(fingerprinted)", "(identified)")):
                 errMsg = "there has been a problem in enumeration. "
                 errMsg += "Because of a considerable chance of false-positive case "
                 errMsg += "you are advised to rerun with switch '--flush-session'"
@@ -361,13 +378,15 @@ def main():
         kb.threadException = True
 
         if kb.get("tempDir"):
-            for prefix in (MKSTEMP_PREFIX.IPC, MKSTEMP_PREFIX.TESTING, MKSTEMP_PREFIX.COOKIE_JAR, MKSTEMP_PREFIX.BIG_ARRAY):
+            for prefix in (
+                    MKSTEMP_PREFIX.IPC, MKSTEMP_PREFIX.TESTING, MKSTEMP_PREFIX.COOKIE_JAR, MKSTEMP_PREFIX.BIG_ARRAY):
                 for filepath in glob.glob(os.path.join(kb.tempDir, "%s*" % prefix)):
                     try:
                         os.remove(filepath)
                     except OSError:
                         pass
-            if not filter(None, (filepath for filepath in glob.glob(os.path.join(kb.tempDir, '*')) if not any(filepath.endswith(_) for _ in ('.lock', '.exe', '_')))):
+            if not filter(None, (filepath for filepath in glob.glob(os.path.join(kb.tempDir, '*')) if
+                                 not any(filepath.endswith(_) for _ in ('.lock', '.exe', '_')))):
                 shutil.rmtree(kb.tempDir, ignore_errors=True)
 
         if conf.get("hashDB"):
@@ -406,6 +425,7 @@ def main():
             # Reference: http://stackoverflow.com/questions/1635080/terminate-a-multi-thread-python-program
             if threading.activeCount() > 1:
                 os._exit(0)
+
 
 if __name__ == "__main__":
     main()

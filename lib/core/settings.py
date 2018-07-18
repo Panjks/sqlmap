@@ -32,6 +32,7 @@ GIT_PAGE = "https://github.com/sqlmapproject/sqlmap"
 ZIPBALL_PAGE = "https://github.com/sqlmapproject/sqlmap/zipball/master"
 
 # colorful banner
+# 带颜色的banner
 BANNER = """\033[01;33m\
         ___
        __H__
@@ -215,7 +216,7 @@ except LookupError:
 DUMMY_URL = "http://foo/bar?id=1"
 
 # System variables
-IS_WIN = subprocess.mswindows
+IS_WIN = subprocess.mswindows  # 是不是windows系统
 
 # The name of the operating system dependent module imported. The following names have currently been registered: 'posix', 'nt', 'mac', 'os2', 'ce', 'java', 'riscos'
 PLATFORM = os.name
@@ -355,6 +356,7 @@ BURP_REQUEST_REGEX = r"={10,}\s+[^=]+={10,}\s(.+?)\s={10,}"
 BURP_XML_HISTORY_REGEX = r'<port>(\d+)</port>.+?<request base64="true"><!\[CDATA\[([^]]+)'
 
 # Encoding used for Unicode data
+# 设置unicode编码为utf-8
 UNICODE_ENCODING = "utf8"
 
 # Reference: http://www.w3.org/Protocols/HTTP/Object_Headers.html#uri
@@ -625,6 +627,7 @@ DNS_BOUNDARIES_ALPHABET = re.sub(r"[a-fA-F]", "", string.ascii_letters)
 HEURISTIC_CHECK_ALPHABET = ('"', '\'', ')', '(', ',', '.')
 
 # Minor artistic touch
+# Banner参数 轻微的艺术感 进行艺术化
 BANNER = re.sub(r"\[.\]", lambda _: "[\033[01;41m%s\033[01;49m]" % random.sample(HEURISTIC_CHECK_ALPHABET, 1)[0], BANNER)
 
 # String used for dummy non-SQLi (e.g. XSS) heuristic checks of a tested parameter value

@@ -123,15 +123,18 @@ def hexencode(value, encoding=None):
 def unicodeencode(value, encoding=None):
     """
     Returns 8-bit string representation of the supplied unicode value
-
+    用utf-8进行unicode编码 或encoding输入的编码方式
     >>> unicodeencode(u'foobar')
     'foobar'
     """
 
     retVal = value
+    # 如果value是unicode类实例
     if isinstance(value, unicode):
         try:
+            # 进行编码
             retVal = value.encode(encoding or UNICODE_ENCODING)
+            # 如果抛出编码异常，用replace方式处理
         except UnicodeEncodeError:
             retVal = value.encode(UNICODE_ENCODING, "replace")
     return retVal
@@ -175,6 +178,7 @@ def htmlunescape(value):
     return retVal
 
 def singleTimeWarnMessage(message):  # Cross-referenced function
+    # 在系统命令行输出一次warning信息
     sys.stdout.write(message)
     sys.stdout.write("\n")
     sys.stdout.flush()
@@ -187,8 +191,10 @@ def stdoutencode(data):
 
         # Reference: http://bugs.python.org/issue1602
         if IS_WIN:
+            # 如果是windows系统
             output = data.encode(sys.stdout.encoding, "replace")
-
+            # 以系统控制台的编码方式进行编码，报错方法为replace
+            # 如果在output里有？而data数据里没有？ 报错 编码出现问题
             if '?' in output and '?' not in data:
                 warnMsg = "cannot properly display Unicode characters "
                 warnMsg += "inside Windows OS command prompt "
@@ -197,12 +203,16 @@ def stdoutencode(data):
                 warnMsg += "replacement with '?' character. Please, find "
                 warnMsg += "proper character representation inside "
                 warnMsg += "corresponding output files. "
-                singleTimeWarnMessage(warnMsg)
+                singleTimeWarnMessage(warnMsg)  # 输出warning信息
 
+            # 返回值为output
             retVal = output
         else:
+            # 如果不是windows系统 进行编码
             retVal = data.encode(sys.stdout.encoding)
     except:
+        # 如果发生异常
+        # 如果data为unicode类实例 则Unicode编码 否则不编码
         retVal = data.encode(UNICODE_ENCODING) if isinstance(data, unicode) else data
 
     return retVal

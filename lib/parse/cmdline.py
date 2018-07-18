@@ -40,14 +40,17 @@ from lib.core.shell import saveHistory
 def cmdLineParser(argv=None):
     """
     This function parses the command line parameters and arguments
+    # 该函数用于处理命令行的选项和参数
     """
-
+    # 如果没有传入参数 则使用系统命令行的参数
     if not argv:
         argv = sys.argv
-
+    # 检查系统命令行的编码格式
     checkSystemEncoding()
 
     # Reference: https://stackoverflow.com/a/4012683 (Note: previously used "...sys.getfilesystemencoding() or UNICODE_ENCODING")
+    # stackoverflow中告诉我们sys.argv是由sys.stdin.encoding编码的 而不是"...sys.getfilesystemencoding() 或 UNICODE_ENCODING"
+    # basename从路径提取文件名，再记性unicode编码
     _ = getUnicode(os.path.basename(argv[0]), encoding=sys.stdin.encoding)
 
     usage = "%s%s [options]" % ("python " if not IS_WIN else "", "\"%s\"" % _ if " " in _ else _)
